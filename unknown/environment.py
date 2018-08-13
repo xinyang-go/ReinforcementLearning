@@ -18,11 +18,11 @@ class baseEnv:
 		self.status = []
 
 
-	def act(self, statu, action):
-		if statu not in self.status:
-			raise BaseException("No such statu")
+	def act(self, statu, action, val):
+		#if statu not in self.status:
+		#	raise BaseException("No such statu")
 		try:
-			return self.motion[action](statu)
+			return self.motion[action](statu, val)
 		except KeyError:
 			raise BaseException("No such action")
 
@@ -41,22 +41,22 @@ class env1(baseEnv):
 		self.actions = ["up", "right", "down", "left"]
 		self.motion = {"up":self.up, "right":self.right, "down":self.down, "left":self.left}
 
-	def up(self, statu):
+	def up(self, statu, val):
 		newStatu = statu if statu[0]==0 else (statu[0]-1, statu[1])
 		self.show(newStatu)
 		return newStatu, self.reward[newStatu]
 	
-	def right(self, statu):
+	def right(self, statu, val):
 		newStatu = (statu if statu[1]==4 else (statu[0], statu[1]+1))
 		self.show(newStatu)
 		return newStatu, self.reward[newStatu]
 	
-	def down(self, statu):
+	def down(self, statu, val):
 		newStatu = (statu if statu[0]==4 else (statu[0]+1, statu[1]))
 		self.show(newStatu)
 		return newStatu, self.reward[newStatu]
 	
-	def left(self, statu):
+	def left(self, statu, val):
 		newStatu = (statu if statu[1]==0 else (statu[0], statu[1]-1))
 		self.show(statu)
 		return newStatu, self.reward[newStatu]
@@ -118,12 +118,12 @@ class env2(baseEnv):
 		print("\r" + pic)
 
 
-	def right(self, statu):
+	def right(self, statu, val):
 		newStatu = statu if statu==5 else statu+1
 		self.show(newStatu)
 		return newStatu, self.reward[newStatu]
 
-	def left(self, statu):
+	def left(self, statu, val):
 		newStatu = statu if statu==0 else statu-1
 		self.show(newStatu)
 		return newStatu, self.reward[newStatu]
@@ -170,10 +170,10 @@ class env3(baseEnv):
 															(line5Type, line5Place)))
 		self.actions = ["left", "right", "stop"]
 		self.motion = {"left":self.left, "right":self.right, "stop":self.stop}
-		self.reward = dict(zip(self.items, [10, -10]))
+		self.reward = dict(zip(self.items, [10, -100]))
 
 
-	def show(self, statu):
+	def show(self, statu, val):
 		if not self.isShow:
 			return 
 		os.system("clear")
@@ -190,13 +190,14 @@ class env3(baseEnv):
 			else:
 				print("-", end="")
 		print("")
+		print("val:%.2f"%val)
 
 	def start(self):
 		statu = self.status[random.randint(0, len(self.status)-1)]
-		self.show(statu)
+		self.show(statu, 0)
 		return statu
 
-	def right(self, statu):
+	def right(self, statu, val):
 		if statu[0]+1 == statu[5][1]:
 			reward = self.reward[statu[5][0]]
 		else:
@@ -207,10 +208,10 @@ class env3(baseEnv):
 			(statu[2][0], statu[2][1]),
 			(statu[3][0], statu[3][1]),
 			(statu[4][0], statu[4][1]))
-		self.show(newStatu)
+		self.show(newStatu, val+reward)
 		return newStatu, reward 
 
-	def left(self, statu):
+	def left(self, statu, val):
 		if statu[0]-1 == statu[5][1]:
 			reward = self.reward[statu[5][0]]
 		else:
@@ -221,10 +222,10 @@ class env3(baseEnv):
 			(statu[2][0], statu[2][1]),
 			(statu[3][0], statu[3][1]),
 			(statu[4][0], statu[4][1]))
-		self.show(newStatu)
+		self.show(newStatu, val+reward)
 		return newStatu, reward 
 	
-	def stop(self, statu):
+	def stop(self, statu, val):
 		if statu[0] == statu[5][1]:
 			reward = self.reward[statu[5][0]]
 		else:
@@ -235,7 +236,7 @@ class env3(baseEnv):
 			(statu[2][0], statu[2][1]),
 			(statu[3][0], statu[3][1]),
 			(statu[4][0], statu[4][1]))
-		self.show(newStatu)
+		self.show(newStatu, val+reward)
 		return newStatu, reward 
 	
 	def get_avaliable_actions(self, statu):
@@ -247,7 +248,7 @@ class env3(baseEnv):
 		return actions
 
 	def is_end(self, statu, val):
-		return True if val>=50 else False
+		return True if val>=1000 else False
 
 
 

@@ -5,6 +5,7 @@ import sys
 import os
 import pickle
 from tqdm import *
+import profile
 
 class QTable:
 	def __init__(self, env):
@@ -36,7 +37,7 @@ class QTable:
 				break;
 			else:
 				is_random = True
-		if random.randint(0,15) == 0 or is_random:
+		if random.random() <= 0.1 or is_random:
 			return random_choose([action for action,val in self.dic[statu].items()])
 		else:
 			i = 0
@@ -60,13 +61,21 @@ class QTable:
 				
 
 R = 0.9
-AMOUNT = 10000
+AMOUNT = 100000
 ALPHA = 0.5
-SLEEP = 0.3
+SLEEP = 2
+
 
 def random_choose(list):
 	return list[random.randint(0, len(list)-1)]
-		
+
+
+	
+def save_qtable(qtable):
+	with open("qtable("+ ("env2" if len(sys.argv)==1 else sys.argv[1]) + ")", "wb") as fp:
+		pickle.dump(qtable, fp)
+#	print("saved")
+	
 def training(env, qtable, isShow=False):
 	try:
 		if not isShow:
@@ -80,7 +89,7 @@ def training(env, qtable, isShow=False):
 			while not env.is_end(statu, val):
 				i += 1
 				action = qtable.choose_action(statu)
-				statu_, reward = env.act(statu, action)
+				statu_, reward = env.act(statu, action, val)
 				val += reward
 				if env.is_end(statu, val):
 					q_target = reward
@@ -100,7 +109,6 @@ def training(env, qtable, isShow=False):
 	return qtable
 	
 if __name__ == "__main__":
-	print(sys.argv)
 	isShow = False 
 	if len(sys.argv) >= 3 and sys.argv[2] == "-s":
 		isShow = True
@@ -123,8 +131,9 @@ if __name__ == "__main__":
 			qtable = pickle.load(fp)
 		
 	qtable = training(env, qtable, isShow)
-	with open("qtable("+ ("env2" if len(sys.argv)==1 else sys.argv[1]) + ")", "wb") as fp:
-		pickle.dump(qtable, fp)	
+#	profile.run("training(env, qtable, isShow)", sort="tottime")
+
+	save_qtable(qtable)
 	if isShow:
 		qtable.show()
 
