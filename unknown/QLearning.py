@@ -61,7 +61,7 @@ class QTable:
 				
 
 R = 0.9
-AMOUNT = 100000
+AMOUNT = 3000000
 ALPHA = 0.5
 SLEEP = 2
 
@@ -69,17 +69,20 @@ SLEEP = 2
 def random_choose(list):
 	return list[random.randint(0, len(list)-1)]
 
-
+global i
+i=0
 	
 def save_qtable(qtable):
-	with open("qtable("+ ("env2" if len(sys.argv)==1 else sys.argv[1]) + ")", "wb") as fp:
+	global i
+	with open("qtable("+ ("env2" if len(sys.argv)==1 else sys.argv[1]) + ")%d"%i, "wb") as fp:
 		pickle.dump(qtable, fp)
+	i = 1 if i==0 else 1
 #	print("saved")
 	
 def training(env, qtable, isShow=False):
 	try:
 		if not isShow:
-			steps = trange(AMOUNT, ncols=100, ascii=True)
+			steps = trange(AMOUNT, dynamic_ncols=True, ascii=True)
 		else:
 			steps = range(AMOUNT)
 		for step in steps:
@@ -103,6 +106,8 @@ def training(env, qtable, isShow=False):
 			if isShow:
 				print("total steps: %d" % i)
 				time.sleep(SLEEP)
+			if step % 10000 == 0:
+				save_qtable(qtable)
 	except KeyboardInterrupt:
 		return qtable 
 
@@ -124,7 +129,7 @@ if __name__ == "__main__":
 	
 	
 	qtable = QTable(env)
-	fileName = ("qtable("+ ("env2" if len(sys.argv)==1 else sys.argv[1]) + ")")
+	fileName = ("qtable("+ ("env2" if len(sys.argv)==1 else sys.argv[1]) + ")0")
 	if fileName in files:
 		print("load tabel")
 		with open(fileName, "rb") as fp:
